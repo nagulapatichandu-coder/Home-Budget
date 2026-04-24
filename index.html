@@ -1,80 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>// 
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Home Budget Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#f5f0eb;--surface:#fffdf9;--border:#e8dde0;--border-light:#f0ebe5;
-  --primary:#7c3aed;--primary-dark:#5b21b6;--primary-light:#ede9fe;
-  --pink:#db2777;--pink-dark:#9d174d;--pink-light:#fce7f3;
-  --text:#1e0a3c;--muted:#7c6f8e;--subtle:#b8a9cc;
-  --green:#059669;--green-bg:#d1fae5;--red:#be123c;--red-bg:#ffe4e6;
-  --amber:#b45309;--amber-bg:#fef3c7;
+body{font-family:system-ui,sans-serif;color:#1e0a3c;background:linear-gradient(135deg,#f3e8ff 0%,#fce7f3 50%,#ede9fe 100%);min-height:100vh;}
+.app{max-width:980px;margin:0 auto;padding:1rem 0.75rem;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding:0.75rem 1.25rem;background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);border:1px solid #e9d5ff;border-radius:12px;box-shadow:0 2px 12px rgba(124,58,237,0.1);}
+.header h1{font-size:18px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header .sub{font-size:12px;color:#9333ea;margin-top:2px;}
+.month-sel{font-size:13px;padding:6px 10px;border:1px solid #d8b4fe;border-radius:8px;background:#faf5ff;color:#7c3aed;cursor:pointer;font-weight:500;}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(233,213,255,0.6);padding:4px;border-radius:12px;margin-bottom:1rem;border:1px solid #e9d5ff;}
+.tab{padding:8px 4px;font-size:11.5px;font-weight:600;border:none;background:none;cursor:pointer;color:#9333ea;border-radius:8px;white-space:nowrap;transition:all .15s;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.tab.active{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,0.35);}
+.tab:hover:not(.active){background:rgba(255,255,255,0.6);color:#7c3aed;}
+@media(max-width:600px){
+  .tabs{grid-template-columns:repeat(3,1fr);}
+  .tab{font-size:11px;padding:8px 4px;}
 }
-body{font-family:system-ui,sans-serif;color:var(--text);background:var(--bg);min-height:100vh;background-image:radial-gradient(ellipse at 80% 0%,#f0e6d6 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,#f5ece4 0%,transparent 50%);}
-body::before{content:'';display:block;height:4px;background:linear-gradient(90deg,#7c3aed,#a855f7,#db2777,#ec4899);position:fixed;top:0;left:0;right:0;z-index:999;}
-.app{max-width:980px;margin:0 auto;padding:1.25rem 0.75rem 1rem;}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding:0.75rem 1.25rem;background:var(--surface);border:0.5px solid var(--border);border-radius:14px;box-shadow:0 2px 12px rgba(124,58,237,.07);}
-.header h1{font-size:18px;font-weight:600;background:linear-gradient(135deg,var(--primary),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.header .sub{font-size:12px;color:var(--muted);margin-top:2px;}
-.month-sel{font-size:13px;padding:6px 10px;border:0.5px solid var(--border);border-radius:8px;background:var(--primary-light);color:var(--primary-dark);cursor:pointer;font-weight:500;}
-.tabs{display:flex;gap:2px;background:#ede9fe;padding:4px;border-radius:12px;margin-bottom:1rem;overflow-x:auto;}
-.tab{flex:1;padding:7px 10px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--muted);border-radius:8px;white-space:nowrap;transition:all .15s;min-width:80px;}
-.tab.active{background:var(--surface);color:var(--primary);border:0.5px solid var(--border);box-shadow:0 1px 4px rgba(124,58,237,.12);}
-.tab:hover:not(.active){color:var(--primary);}
 .panel{display:none;}.panel.active{display:block;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
 @media(max-width:680px){.metrics{grid-template-columns:repeat(2,1fr);}.twocol{grid-template-columns:1fr!important;}}
-.metric{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(124,58,237,.05);}
-.metric .mlabel{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-.metric .mval{font-size:22px;font-weight:600;}
-.metric .msub{font-size:11px;color:var(--subtle);margin-top:3px;}
-.green{color:var(--green);}.red{color:var(--red);}.amber{color:var(--amber);}.blue{color:var(--primary);}
-.card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 6px rgba(124,58,237,.05);}
-.card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;}
+.metric{background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);border:1px solid #e9d5ff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(124,58,237,0.08);}
+.metric .mlabel{font-size:11px;color:#a855f7;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.metric .mval{font-size:22px;font-weight:700;}
+.metric .msub{font-size:11px;color:#c084fc;margin-top:3px;}
+.green{color:#059669;}.red{color:#be123c;}.amber{color:#b45309;}.blue{color:#7c3aed;}
+.card{background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);border:1px solid #e9d5ff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 6px rgba(124,58,237,0.08);}
+.card-title{font-size:11px;font-weight:700;color:#a855f7;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;}
 .twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
 .chart-wrap{position:relative;width:100%;height:240px;}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-.row label{font-size:13px;color:var(--muted);min-width:140px;}
-input[type=number],input[type=text],input[type=date],select.inp{flex:1;padding:7px 10px;font-size:13px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);min-width:80px;}
-input:focus,select.inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(124,58,237,.12);}
-.btn{padding:8px 16px;font-size:13px;border:0.5px solid var(--border);border-radius:8px;background:none;cursor:pointer;color:var(--text);transition:all .15s;white-space:nowrap;}
-.btn:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary);}
-.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);}.btn.primary:hover{background:var(--primary-dark);}
-.btn.success{background:var(--pink);color:#fff;border-color:var(--pink);}.btn.success:hover{background:var(--pink-dark);}
+.row label{font-size:13px;color:#7e22ce;min-width:140px;}
+input[type=number],input[type=text],input[type=date],select.inp{flex:1;padding:7px 10px;font-size:13px;border:1px solid #d8b4fe;border-radius:8px;background:#faf5ff;color:#1e0a3c;min-width:80px;}
+input:focus,select.inp:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 2px rgba(124,58,237,0.15);}
+.btn{padding:8px 16px;font-size:13px;border:1px solid #d8b4fe;border-radius:8px;background:rgba(255,255,255,0.7);cursor:pointer;color:#7c3aed;transition:all .15s;white-space:nowrap;font-weight:500;}
+.btn:hover{background:#f3e8ff;border-color:#a855f7;}
+.btn.primary{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;border-color:#7c3aed;box-shadow:0 1px 4px rgba(124,58,237,0.3);}.btn.primary:hover{background:linear-gradient(135deg,#6d28d9,#7c3aed);}
+.btn.success{background:linear-gradient(135deg,#db2777,#ec4899);color:#fff;border-color:#db2777;box-shadow:0 1px 4px rgba(219,39,119,0.3);}.btn.success:hover{background:linear-gradient(135deg,#be185d,#db2777);}
 .btn.sm{padding:4px 8px;font-size:11px;}
-.btn.danger{color:var(--red);border-color:transparent;}.btn.danger:hover{background:var(--red-bg);}
+.btn.danger{color:#be123c;border-color:transparent;background:none;}.btn.danger:hover{background:#fff1f3;border-color:#fecdd3;}
 .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-bottom:1rem;}
-.cat-btn{padding:10px 6px;font-size:11px;font-weight:500;border:0.5px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3;}
-.cat-btn:hover{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark);}
-.cat-btn.sel{border-color:var(--primary);background:linear-gradient(135deg,var(--primary),var(--pink));color:#fff;}
+.cat-btn{padding:10px 6px;font-size:11px;font-weight:500;border:1px solid #e9d5ff;border-radius:12px;background:rgba(255,255,255,0.7);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3;color:#7e22ce;}
+.cat-btn:hover{border-color:#a855f7;background:#f3e8ff;color:#7c3aed;}
+.cat-btn.sel{border-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,0.3);}
 .cat-btn .icon{font-size:20px;display:block;margin-bottom:3px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:0.5px solid var(--border);white-space:nowrap;}
-td{padding:8px 10px;border-bottom:0.5px solid var(--border-light);}
+th{font-size:11px;font-weight:600;color:#a855f7;text-align:left;padding:8px 10px;border-bottom:1px solid #e9d5ff;white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid #f3e8ff;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--primary-light);}
+tr:hover td{background:rgba(243,232,255,0.5);}
 .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;}
-.badge.fixed{background:var(--primary-light);color:var(--primary-dark);}
-.badge.variable{background:var(--pink-light);color:var(--pink-dark);}
+.badge.fixed{background:#f3e8ff;color:#7c3aed;}
+.badge.variable{background:#fce7f3;color:#be185d;}
 .badge.imported{background:#fef3c7;color:#92400e;}
-.badge.manual{background:var(--bg);color:var(--muted);}
+.badge.manual{background:#f5f5f4;color:#78716c;}
 .prog-wrap{margin-bottom:10px;}
 .prog-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
-.prog-bar{height:7px;background:var(--border-light);border-radius:4px;overflow:hidden;}
+.prog-bar{height:7px;background:#f3e8ff;border-radius:4px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:4px;transition:width .4s;}
-.upload-zone{border:1.5px dashed var(--subtle);border-radius:14px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;background:linear-gradient(135deg,var(--primary-light),var(--pink-light));}
-.upload-zone:hover{border-color:var(--primary);background:linear-gradient(135deg,#ddd6fe,#fbcfe8);}
-.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem;border:0.5px solid transparent;}
-.alert.success{background:var(--green-bg);color:#065f46;border-color:#6ee7b7;}
-.alert.info{background:var(--primary-light);color:var(--primary-dark);border-color:#c4b5fd;}
-.alert.warn{background:var(--amber-bg);color:#78350f;border-color:#fcd34d;}
-.alert.err{background:var(--red-bg);color:#9f1239;border-color:#fca5a5;}
-.section-sep{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:6px 0;border-bottom:0.5px solid var(--border);margin:14px 0 10px;}
-.empty{font-size:13px;color:var(--muted);text-align:center;padding:2rem;}
+.upload-zone{border:1.5px dashed #c084fc;border-radius:12px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;background:linear-gradient(135deg,rgba(243,232,255,0.6),rgba(252,231,243,0.6));}
+.upload-zone:hover{border-color:#7c3aed;background:linear-gradient(135deg,rgba(237,233,254,0.8),rgba(251,207,232,0.8));}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem;border:1px solid transparent;}
+.alert.success{background:#ecfdf5;color:#065f46;border-color:#a7f3d0;}
+.alert.info{background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe;}
+.alert.warn{background:#fffbeb;color:#78350f;border-color:#fcd34d;}
+.alert.err{background:#fff1f3;color:#9f1239;border-color:#fecdd3;}
+.section-sep{font-size:11px;font-weight:600;color:#c084fc;text-transform:uppercase;letter-spacing:.07em;padding:6px 0;border-bottom:1px solid #e9d5ff;margin:14px 0 10px;}
+.empty{font-size:13px;color:#a855f7;text-align:center;padding:2rem;}
 .pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;}
 .import-scroll{max-height:400px;overflow-y:auto;}
 </style>
@@ -181,7 +176,7 @@ tr:hover td{background:var(--primary-light);}
       <div>
         <div class="card">
           <div class="card-title">Add Expense</div>
-          <div id="sel-cat-label" style="font-size:13px;color:#7c6f8e;margin-bottom:12px;padding:8px 10px;background:#f5f0eb;border-radius:8px;border:0.5px solid #e8dff5;">← Select a category first</div>
+          <div id="sel-cat-label" style="font-size:13px;color:#888;margin-bottom:12px;padding:8px 10px;background:#f5f5f3;border-radius:8px;border:0.5px solid #e0e0d8;">← Select a category first</div>
           <div class="row"><label>Date</label><input type="date" id="e-date"></div>
           <div class="row"><label>Amount (₹)</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01"></div>
           <div class="row"><label>Note</label><input type="text" id="e-note" placeholder="Optional description..."></div>
@@ -219,8 +214,8 @@ tr:hover td{background:var(--primary-light);}
           <tbody id="exp-tbody"></tbody>
         </table>
       </div>
-      <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:13px;border-top:0.5px solid #e8dff5;padding-top:10px;">
-        <span id="exp-count" style="color:#7c6f8e;"></span>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:13px;border-top:0.5px solid #e0e0d8;padding-top:10px;">
+        <span id="exp-count" style="color:#888;"></span>
         <span id="exp-total" style="font-weight:600;color:#7c3aed;"></span>
       </div>
     </div>
@@ -247,13 +242,13 @@ tr:hover td{background:var(--primary-light);}
   <div class="panel" id="tab-import">
     <div class="card">
       <div class="card-title">Import Bank Statement</div>
-      <div class="alert info">Upload your bank's Excel (.xlsx / .xls), CSV, PDF statement, or a photo/screenshot (.jpg / .png). Transactions are auto-assigned categories. Review and confirm before importing.</div>
+      <div class="alert info">Upload your bank's Excel (.xlsx / .xls), CSV, or PDF statement. Transactions are auto-assigned categories. Review and confirm before importing.</div>
       <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-inp').click()">
         <div style="font-size:36px;margin-bottom:10px;">📂</div>
         <p style="font-size:14px;font-weight:600;">Click to upload or drag & drop</p>
-        <p style="font-size:12px;color:#7c6f8e;margin-top:6px;">Supports .xlsx · .xls · .csv · .pdf · .png · .jpg · .jpeg</p>
+        <p style="font-size:12px;color:#a855f7;margin-top:6px;">Supports .xlsx · .xls · .csv · .pdf</p>
       </div>
-      <input type="file" id="file-inp" accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg" style="display:none;" onchange="handleFile(this)">
+      <input type="file" id="file-inp" accept=".xlsx,.xls,.csv,.pdf" style="display:none;" onchange="handleFile(this)">
     </div>
     <div id="import-area"></div>
   </div>
@@ -273,7 +268,7 @@ const ICONS={
   'Car Maintenance':'🔧','Others':'📦','Insurance':'🛡️','Medical':'💊','Utilities':'💡'
 };
 const ic=n=>ICONS[n]||'💰';
-const PALETTE=['#7c3aed','#db2777','#8b5cf6','#ec4899','#6d28d9','#be185d','#a78bfa','#f472b6','#5b21b6','#9d174d','#c4b5fd','#fbcfe8','#7e22ce','#831843','#4c1d95'];
+const PALETTE=['#7c3aed','#db2777','#9333ea','#ec4899','#6d28d9','#be185d','#a855f7','#f472b6','#7e22ce','#9d174d','#c084fc','#fbcfe8','#8b5cf6','#f9a8d4','#4c1d95'];
 
 const KW_MAP=[
   ['Groceries',['grocery','grocer','supermarket','bigbasket','dmart','reliance fresh','more fresh','spar','natures basket']],
@@ -391,7 +386,7 @@ function renderBVA(){
     data:{
       labels:cats.map(c=>c.name.length>9?c.name.slice(0,9)+'…':c.name),
       datasets:[
-        {label:'Budget',data:cats.map(c=>c.budget),backgroundColor:'#c4b5fd',borderRadius:3,borderSkipped:false},
+        {label:'Budget',data:cats.map(c=>c.budget),backgroundColor:'#e9d5ff',borderRadius:3,borderSkipped:false},
         {label:'Spent',data:cats.map(c=>sp[c.name]||0),backgroundColor:'#7c3aed',borderRadius:3,borderSkipped:false}
       ]
     },
@@ -412,7 +407,7 @@ function renderProgress(){
     const pct=c.budget?Math.min(120,Math.round(s/c.budget*100)):0;
     const color=pct>=100?'#be123c':pct>=80?'#b45309':'#7c3aed';
     return`<div class="prog-wrap">
-      <div class="prog-row"><span style="font-size:12px;">${ic(c.name)} ${c.name}</span><span style="color:#7c6f8e;font-size:11px;">${fmt(s)} / ${fmt(c.budget)}</span></div>
+      <div class="prog-row"><span style="font-size:12px;">${ic(c.name)} ${c.name}</span><span style="color:#888;font-size:11px;">${fmt(s)} / ${fmt(c.budget)}</span></div>
       <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(100,pct)}%;background:${color};"></div></div>
       <div style="font-size:10px;color:${color};margin-top:2px;">${pct}% used</div>
     </div>`;
@@ -429,7 +424,7 @@ function renderSummaryTables(){
       return`<tr>
         <td>${ic(c.name)} ${c.name}</td>
         <td>${fmt(c.budget)}</td>
-        <td style="font-weight:500;color:${over?'#be123c':'inherit'}">${fmt(s)}</td>
+        <td style="font-weight:500;color:${over?'#A32D2D':'inherit'}">${fmt(s)}</td>
         <td><span class="pill" style="background:${over?'#FCEBEB':pct>80?'#FAEEDA':'#E1F5EE'};color:${over?'#791F1F':pct>80?'#633806':'#085041'};">${c.budget?pct+'%':'—'}</span></td>
       </tr>`;
     }).join('');
@@ -442,7 +437,7 @@ function renderSummaryTables(){
 function renderBudgetSetup(){
   document.getElementById('income-input').value=S.income;
   function listHTML(list){
-    if(!list.length)return'<div style="font-size:13px;color:#7c6f8e;padding:8px 0;">No items. Add one below.</div>';
+    if(!list.length)return'<div style="font-size:13px;color:#888;padding:8px 0;">No items. Add one below.</div>';
     return list.map(e=>`<div class="row">
       <label style="font-size:13px;">${ic(e.name)} ${e.name}</label>
       <input type="number" value="${e.budget}" min="0" style="max-width:130px;" onchange="updateBudget(${e.id},this.value)">
@@ -481,7 +476,7 @@ function renderCatButtons(){
     document.getElementById(id).innerHTML=list.length?list.map(c=>`
       <div class="cat-btn ${S.selCat===c.name?'sel':''}" onclick="selCat('${c.name.replace(/'/g,"\\'")}')">
         <span class="icon">${ic(c.name)}</span>${c.name}
-      </div>`).join(''):'<div style="font-size:12px;color:#7c6f8e;">None. Add in Budget Setup.</div>';
+      </div>`).join(''):'<div style="font-size:12px;color:#888;">None. Add in Budget Setup.</div>';
   }
   btns(S.fixed,'fixed-cats');
   btns(S.variable,'var-cats');
@@ -521,10 +516,10 @@ function renderTodayEntries(){
     entries.map(e=>`<tr>
       <td>${ic(e.cat)} ${e.cat}</td>
       <td style="font-weight:500;color:#7c3aed;">${fmt(e.amount)}</td>
-      <td style="color:#7c6f8e;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
+      <td style="color:#888;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
       <td><button class="btn sm danger" onclick="delEntry(${e.id})">✕</button></td>
     </tr>`).join('')+
-    `</tbody><tfoot><tr><td colspan="1" style="padding-top:8px;font-weight:600;color:#7c6f8e;">Total</td><td style="padding-top:8px;font-weight:600;color:#7c3aed;">${fmt(total)}</td><td colspan="2"></td></tr></tfoot></table>`;
+    `</tbody><tfoot><tr><td colspan="1" style="padding-top:8px;font-weight:600;color:#888;">Total</td><td style="padding-top:8px;font-weight:600;color:#7c3aed;">${fmt(total)}</td><td colspan="2"></td></tr></tfoot></table>`;
 }
 
 function delEntry(id){S.entries=S.entries.filter(e=>e.id!==id);save();renderAll();}
@@ -554,7 +549,7 @@ function renderExpenses(){
       <td style="white-space:nowrap;">${ic(e.cat)} ${e.cat}</td>
       <td><span class="badge ${e.type}">${e.type}</span></td>
       <td style="font-weight:500;white-space:nowrap;">${fmt(e.amount)}</td>
-      <td style="color:#7c6f8e;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
+      <td style="color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
       <td><span class="badge ${e.source==='import'?'imported':'manual'}">${e.source==='import'?'bank':'manual'}</span></td>
       <td><button class="btn sm danger" onclick="delEntry(${e.id})">✕</button></td>
     </tr>`).join('');
@@ -582,7 +577,7 @@ function renderMonthly(){
         labels:MONTHS.map((n,i)=>n.slice(0,3)+' '+(MKEYS[i].split('-')[0]).slice(2)),
         datasets:[
           {label:'Fixed',data:mData.map(d=>d.fixedSp),backgroundColor:'#7c3aed',stack:'s',borderRadius:2},
-          {label:'Variable',data:mData.map(d=>d.varSp),backgroundColor:'#f472b6',stack:'s',borderRadius:2},
+          {label:'Variable',data:mData.map(d=>d.varSp),backgroundColor:'#e9d5ff',stack:'s',borderRadius:2},
           {label:'Savings',data:mData.map(d=>Math.max(0,d.savings)),type:'line',borderColor:'#059669',backgroundColor:'rgba(5,150,105,.1)',pointBackgroundColor:'#059669',pointRadius:4,fill:true,tension:.3,yAxisID:'y'}
         ]
       },
@@ -592,7 +587,7 @@ function renderMonthly(){
     });
   }
   const tbody=document.getElementById('monthly-tbody');if(!tbody)return;
-  tbody.innerHTML=mData.map((d,i)=>`<tr style="${MKEYS[i]===S.month?'background:#f3e8ff;font-weight:500;':''}">
+  tbody.innerHTML=mData.map((d,i)=>`<tr style="${MKEYS[i]===S.month?'background:#f0f7ff;font-weight:500;':''}">
     <td>${MONTHS[i]} ${MKEYS[i].split('-')[0]}</td>
     <td class="green">${fmt(S.income)}</td>
     <td class="blue">${fmt(d.fixedSp)}</td>
@@ -609,64 +604,59 @@ let pendingImport=[];
 function handleFile(inp){
   const file=inp.files[0];if(!file)return;
   const name=file.name.toLowerCase();
-  const isPdf=name.endsWith('.pdf');
-  const isImg=name.endsWith('.png')||name.endsWith('.jpg')||name.endsWith('.jpeg');
 
-  if(isPdf||isImg){
-    // Use Claude AI to extract transactions from PDF/image
-    document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert info">⏳ Analysing ${isPdf?'PDF':'image'} with AI — please wait...</div></div>`;
+  if(name.endsWith('.pdf')){
+    // Use Claude AI to extract transactions from PDF
+    document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert info">⏳ Reading PDF with AI — please wait...</div></div>`;
     const reader=new FileReader();
     reader.onload=async function(ev){
       try{
         const base64=ev.target.result.split(',')[1];
-        const mediaType=isPdf?'application/pdf':file.type||'image/png';
         const resp=await fetch('https://api.anthropic.com/v1/messages',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             model:'claude-sonnet-4-20250514',
             max_tokens:1000,
-            system:`You are a bank statement parser. Extract ALL debit/expense transactions from this bank statement document or image.
-Return ONLY a JSON array of objects (no markdown, no explanation) with these exact keys:
-[{"date":"YYYY-MM-DD","desc":"transaction description","amt":123.45}, ...]
+            system:`You are a bank statement parser. Extract ALL debit/expense/withdrawal transactions from this bank statement PDF.
+Return ONLY a valid JSON array with no markdown, no explanation, no code fences. Format:
+[{"date":"YYYY-MM-DD","desc":"narration text","amt":123.45}]
 Rules:
-- Only include debit/expense/withdrawal transactions (positive amounts only)
-- Skip credits, deposits, opening/closing balances
-- Dates must be in YYYY-MM-DD format (guess the year if missing, use current year)
-- amt must be a positive number (no currency symbols)
-- desc should be the narration/description text
-- If you cannot find any transactions, return an empty array []`,
+- Only include debits/withdrawals/expenses (positive numbers only)
+- Skip credits, deposits, opening balance, closing balance lines
+- Dates must be YYYY-MM-DD format (use current year if missing)
+- amt must be a positive number (no currency symbols or commas)
+- If no transactions found, return []`,
             messages:[{role:'user',content:[
-              {type:isPdf?'document':'image',source:{type:'base64',media_type:mediaType,data:base64}},
-              {type:'text',text:'Extract all debit/expense transactions from this bank statement as JSON array.'}
+              {type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}},
+              {type:'text',text:'Extract all debit transactions as JSON array.'}
             ]}]
           })
         });
         const data=await resp.json();
-        if(data.error){throw new Error(data.error.message||'API error');}
+        if(data.error)throw new Error(data.error.message||'API error');
         const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
         let txns=[];
-        try{
-          const clean=text.replace(/```json|```/g,'').trim();
-          txns=JSON.parse(clean);
-        }catch(e){throw new Error('Could not parse AI response. Please try a clearer image or a CSV/Excel file.');}
+        try{txns=JSON.parse(text.replace(/```json|```/g,'').trim());}
+        catch(e){throw new Error('Could not parse AI response. Please try a CSV or Excel file instead.');}
         if(!Array.isArray(txns)||!txns.length){
-          document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert warn">⚠️ No debit transactions found in the ${isPdf?'PDF':'image'}. Try uploading a CSV or Excel file instead.</div></div>`;
+          document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert warn">⚠️ No debit transactions found in the PDF. Try uploading a CSV or Excel file instead.</div></div>`;
           return;
         }
-        // Convert to importRows format: [header, ...rows]
-        const fakeRows=[['Date','Description','Amount'],...txns.map(t=>[t.date,t.desc,t.amt])];
-        importRows=fakeRows;
-        showImportSetup(fakeRows,file.name,true);
+        // Build fake rows with header so showImportSetup works
+        importRows=[['Date','Description','Amount'],...txns.map(t=>[t.date,t.desc,t.amt])];
+        // Auto-map columns and skip to preview directly
+        document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert success">✨ AI extracted <strong>${txns.length} transactions</strong> from <strong>${file.name}</strong>. Review below.</div><div style="display:none;"><select id="c-date"><option value="0" selected></option></select><select id="c-desc"><option value="1" selected></option></select><select id="c-amt"><option value="2" selected></option></select></div></div>`;
+        previewImport();
       }catch(err){
-        document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert err">❌ Error: ${err.message}</div></div>`;
+        document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert err">❌ ${err.message}</div></div>`;
       }
     };
     reader.readAsDataURL(file);
     return;
   }
 
-  // CSV / Excel path (original)
+  // CSV / Excel
   const reader=new FileReader();
   reader.onload=function(ev){
     try{
@@ -689,24 +679,9 @@ Rules:
   reader.readAsArrayBuffer(file);
 }
 
-function showImportSetup(rows,fname,aiParsed){
+function showImportSetup(rows,fname){
   if(rows.length<2){document.getElementById('import-area').innerHTML='<div class="card"><div class="alert err">No data found in the file.</div></div>';return;}
   const headers=rows[0].map(String);
-
-  if(aiParsed){
-    // AI already extracted clean Date/Description/Amount columns — skip mapping, go straight to preview
-    document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert success">✨ AI extracted <strong>${rows.length-1} transactions</strong> from <strong>${fname}</strong>. Review below.</div></div>`;
-    // Set hidden selects so previewImport() can find col indices (0=Date,1=Desc,2=Amount)
-    document.getElementById('import-area').insertAdjacentHTML('beforeend',
-      `<div style="display:none;">
-        <select id="c-date"><option value="0" selected>Date</option></select>
-        <select id="c-desc"><option value="1" selected>Description</option></select>
-        <select id="c-amt"><option value="2" selected>Amount</option></select>
-      </div>`);
-    previewImport();
-    return;
-  }
-
   const det=detectCols(headers);
   let html=`<div class="card">
     <div class="alert success">✓ Loaded <strong>${fname}</strong> — ${rows.length-1} rows detected</div>
@@ -796,7 +771,7 @@ function previewImport(){
     </tr>`;
   });
   html+=`</tbody></table></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:0.5px solid #e8dff5;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:0.5px solid #e0e0d8;flex-wrap:wrap;gap:8px;">
       <div style="font-size:13px;color:#555;">Selected: <strong id="imp-total">—</strong></div>
       <button class="btn success" onclick="confirmImport()">✓ Import Selected</button>
     </div>
@@ -859,7 +834,7 @@ document.querySelectorAll('.tab').forEach(t=>{
 
 /* Drag & drop */
 const dz=document.getElementById('drop-zone');
-dz.ondragover=e=>{e.preventDefault();dz.style.background='#ede9fe';dz.style.borderColor='#7c3aed';};
+dz.ondragover=e=>{e.preventDefault();dz.style.background='#f3e8ff';dz.style.borderColor='#7c3aed';};
 dz.ondragleave=()=>{dz.style.background='';dz.style.borderColor='';};
 dz.ondrop=e=>{
   e.preventDefault();dz.style.background='';dz.style.borderColor='';
