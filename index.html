@@ -12,14 +12,48 @@ body{font-family:system-ui,sans-serif;color:#1e0a3c;background:linear-gradient(1
 .header h1{font-size:18px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .header .sub{font-size:12px;color:#9333ea;margin-top:2px;}
 .month-sel{font-size:13px;padding:6px 10px;border:1px solid #d8b4fe;border-radius:8px;background:#faf5ff;color:#7c3aed;cursor:pointer;font-weight:500;}
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(233,213,255,0.6);padding:4px;border-radius:12px;margin-bottom:1rem;border:1px solid #e9d5ff;}
-.tab{padding:8px 4px;font-size:11.5px;font-weight:600;border:none;background:none;cursor:pointer;color:#9333ea;border-radius:8px;white-space:nowrap;transition:all .15s;text-align:center;overflow:hidden;text-overflow:ellipsis;}
-.tab.active{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,0.35);}
-.tab:hover:not(.active){background:rgba(255,255,255,0.6);color:#7c3aed;}
-@media(max-width:600px){
-  .tabs{grid-template-columns:repeat(3,1fr);}
-  .tab{font-size:11px;padding:8px 4px;}
+/* ── Bottom Nav ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-around;
+  background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);
+  border-top:1px solid #e9d5ff;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 20px rgba(124,58,237,0.1);
 }
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 2px;border:none;background:none;cursor:pointer;
+  color:#a855f7;border-radius:10px;transition:all .15s;
+  font-size:10px;font-weight:600;letter-spacing:.01em;
+}
+.nav-btn .nav-icon{font-size:20px;line-height:1;}
+.nav-btn.active{color:#7c3aed;}
+.nav-btn.active .nav-icon{
+  background:linear-gradient(135deg,#f3e8ff,#fce7f3);
+  border-radius:10px;padding:4px 10px;
+  box-shadow:0 2px 8px rgba(124,58,237,0.15);
+}
+.nav-btn:hover:not(.active){color:#7c3aed;}
+
+/* ── FAB ── */
+.fab{
+  position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:18px;
+  width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#db2777);
+  color:#fff;font-size:28px;line-height:1;
+  box-shadow:0 4px 20px rgba(124,58,237,0.45);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .15s;z-index:101;
+}
+.fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(124,58,237,0.55);}
+.fab:active{transform:scale(0.95);}
+
+/* ── Spacer so content isn't hidden behind nav ── */
+.nav-spacer{height:80px;}
+
+/* Hide old tabs */
+.tabs{display:none;}
 .panel{display:none;}.panel.active{display:block;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
 @media(max-width:680px){.metrics{grid-template-columns:repeat(2,1fr);}.twocol{grid-template-columns:1fr!important;}}
@@ -87,7 +121,29 @@ tr:hover td{background:rgba(243,232,255,0.5);}
     </div>
   </div>
 
-  <!-- TABS -->
+  <!-- BOTTOM NAV (5 tabs) -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="dashboard">
+      <span class="nav-icon">📊</span>Dashboard
+    </button>
+    <button class="nav-btn" data-tab="budget">
+      <span class="nav-icon">⚙️</span>Budget
+    </button>
+    <button class="nav-btn" data-tab="expenses">
+      <span class="nav-icon">📋</span>Expenses
+    </button>
+    <button class="nav-btn" data-tab="monthly">
+      <span class="nav-icon">📅</span>Monthly
+    </button>
+    <button class="nav-btn" data-tab="import">
+      <span class="nav-icon">🏦</span>Import
+    </button>
+  </nav>
+
+  <!-- FAB for Daily Entry -->
+  <button class="fab" onclick="openDailyEntry()" title="Add Daily Expense">＋</button>
+
+  <!-- TABS (kept for JS compatibility, hidden) -->
   <div class="tabs">
     <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
     <button class="tab" data-tab="budget">⚙️ Budget Setup</button>
@@ -210,14 +266,20 @@ tr:hover td{background:rgba(243,232,255,0.5);}
       </div>
       <div style="overflow-x:auto;">
         <table>
-          <thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Amount</th><th>Note</th><th>Source</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Amount</th><th>% Income</th><th>Note</th><th>Source</th><th></th></tr></thead>
           <tbody id="exp-tbody"></tbody>
         </table>
       </div>
-      <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:13px;border-top:0.5px solid #e0e0d8;padding-top:10px;">
-        <span id="exp-count" style="color:#888;"></span>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:13px;border-top:0.5px solid #e9d5ff;padding-top:10px;">
+        <span id="exp-count" style="color:#a855f7;"></span>
         <span id="exp-total" style="font-weight:600;color:#7c3aed;"></span>
       </div>
+    </div>
+
+    <!-- Category % breakdown -->
+    <div class="card">
+      <div class="card-title">Spending by Category — % of Monthly Income</div>
+      <div id="cat-pct-list"></div>
     </div>
   </div>
 
@@ -252,6 +314,7 @@ tr:hover td{background:rgba(243,232,255,0.5);}
     </div>
     <div id="import-area"></div>
   </div>
+  <div class="nav-spacer"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -540,23 +603,66 @@ function renderExpenses(){
   if(typeF)entries=entries.filter(e=>e.type===typeF);
   entries.sort((a,b)=>b.date.localeCompare(a.date));
   const total=entries.reduce((a,e)=>a+e.amount,0);
+  const income=S.income||1;
   const tbody=document.getElementById('exp-tbody');if(!tbody)return;
+
   if(!entries.length){
-    tbody.innerHTML=`<tr><td colspan="7"><div class="empty">No expenses match the filter.</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty">No expenses match the filter.</div></td></tr>`;
   }else{
-    tbody.innerHTML=entries.map(e=>`<tr>
-      <td style="white-space:nowrap;">${e.date}</td>
-      <td style="white-space:nowrap;">${ic(e.cat)} ${e.cat}</td>
-      <td><span class="badge ${e.type}">${e.type}</span></td>
-      <td style="font-weight:500;white-space:nowrap;">${fmt(e.amount)}</td>
-      <td style="color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
-      <td><span class="badge ${e.source==='import'?'imported':'manual'}">${e.source==='import'?'bank':'manual'}</span></td>
-      <td><button class="btn sm danger" onclick="delEntry(${e.id})">✕</button></td>
-    </tr>`).join('');
+    tbody.innerHTML=entries.map(e=>{
+      const pct=income?((e.amount/income)*100).toFixed(1):0;
+      const pctColor=pct>=10?'#be123c':pct>=5?'#b45309':'#059669';
+      return`<tr>
+        <td style="white-space:nowrap;">${e.date}</td>
+        <td style="white-space:nowrap;">${ic(e.cat)} ${e.cat}</td>
+        <td><span class="badge ${e.type}">${e.type}</span></td>
+        <td style="font-weight:600;white-space:nowrap;color:#7c3aed;">${fmt(e.amount)}</td>
+        <td style="white-space:nowrap;font-weight:600;color:${pctColor};">${pct}%</td>
+        <td style="color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.note||'—'}</td>
+        <td><span class="badge ${e.source==='import'?'imported':'manual'}">${e.source==='import'?'bank':'manual'}</span></td>
+        <td><button class="btn sm danger" onclick="delEntry(${e.id})">✕</button></td>
+      </tr>`;
+    }).join('');
   }
-  const countEl=document.getElementById('exp-count');const totalEl=document.getElementById('exp-total');
+
+  const countEl=document.getElementById('exp-count');
+  const totalEl=document.getElementById('exp-total');
   if(countEl)countEl.textContent=`${entries.length} transaction${entries.length!==1?'s':''}`;
-  if(totalEl)totalEl.textContent=`Total: ${fmt(total)}`;
+  const totalPct=income?((total/income)*100).toFixed(1):0;
+  if(totalEl)totalEl.innerHTML=`Total: <strong>${fmt(total)}</strong> &nbsp;·&nbsp; <span style="color:#7c3aed;font-weight:700;">${totalPct}% of income</span>`;
+
+  // ── Category % breakdown ──
+  const catPctEl=document.getElementById('cat-pct-list');if(!catPctEl)return;
+  const allEntries=entriesForMonth(); // always show all cats unfiltered
+  const catTotals={};
+  allEntries.forEach(e=>{catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
+  const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){catPctEl.innerHTML='<div class="empty">No expenses this month.</div>';return;}
+  catPctEl.innerHTML=sorted.map(([cat,amt])=>{
+    const pct=income?((amt/income)*100):0;
+    const pctStr=pct.toFixed(1);
+    const barColor=pct>=15?'#be123c':pct>=10?'#b45309':pct>=5?'#7c3aed':'#a855f7';
+    const barW=Math.min(pct*4,100); // scale: 25% income = full bar
+    return`<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:500;">${ic(cat)} ${cat}</span>
+        <span style="display:flex;gap:10px;align-items:center;">
+          <span style="font-size:12px;color:#a855f7;">${fmt(amt)}</span>
+          <span style="font-size:12px;font-weight:700;color:${barColor};min-width:38px;text-align:right;">${pctStr}%</span>
+        </span>
+      </div>
+      <div style="height:6px;background:#f3e8ff;border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${barW}%;background:${barColor};border-radius:4px;transition:width .4s;"></div>
+      </div>
+    </div>`;
+  }).join('')+
+  `<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e9d5ff;display:flex;justify-content:space-between;font-size:13px;">
+    <span style="color:#a855f7;font-weight:600;">Total Spent</span>
+    <span style="display:flex;gap:10px;">
+      <span style="color:#7c3aed;font-weight:600;">${fmt(Object.values(catTotals).reduce((a,b)=>a+b,0))}</span>
+      <span style="font-weight:700;color:${totalPct>=50?'#be123c':totalPct>=30?'#b45309':'#059669'};">${totalPct}% of ₹${Math.round(income/1000)}K</span>
+    </span>
+  </div>`;
 }
 
 /* ── MONTHLY VIEW ──────────────────────────────────────── */
@@ -612,7 +718,7 @@ function handleFile(inp){
     reader.onload=async function(ev){
       try{
         const base64=ev.target.result.split(',')[1];
-        const resp=await fetch('https://api.anthropic.com/v1/messages',{
+        const resp=await fetch('/api/parse-pdf',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
@@ -634,7 +740,7 @@ Rules:
           })
         });
         const data=await resp.json();
-        if(data.error)throw new Error(data.error.message||'API error');
+        if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
         const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
         let txns=[];
         try{txns=JSON.parse(text.replace(/```json|```/g,'').trim());}
@@ -649,7 +755,11 @@ Rules:
         document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert success">✨ AI extracted <strong>${txns.length} transactions</strong> from <strong>${file.name}</strong>. Review below.</div><div style="display:none;"><select id="c-date"><option value="0" selected></option></select><select id="c-desc"><option value="1" selected></option></select><select id="c-amt"><option value="2" selected></option></select></div></div>`;
         previewImport();
       }catch(err){
-        document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert err">❌ ${err.message}</div></div>`;
+        const msg=err.message||'Unknown error';
+        const hint=msg.includes('fetch')||msg.includes('network')||msg.includes('Failed')
+          ? msg+' — Make sure you are connected to the internet and try again.'
+          : msg;
+        document.getElementById('import-area').innerHTML=`<div class="card"><div class="alert err">❌ ${hint}</div></div>`;
       }
     };
     reader.readAsDataURL(file);
@@ -823,14 +933,37 @@ function renderAll(){
   renderMonthly();
 }
 
-document.querySelectorAll('.tab').forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-  };
+/* ── TAB SWITCHING ─────────────────────────────────────── */
+function showTab(tabName){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  const panel=document.getElementById('tab-'+tabName);
+  if(panel)panel.classList.add('active');
+  document.querySelectorAll('.nav-btn[data-tab="'+tabName+'"]').forEach(x=>x.classList.add('active'));
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.onclick=()=>showTab(btn.dataset.tab);
 });
+
+// Keep old .tab clicks working too (hidden tabs)
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick=()=>showTab(t.dataset.tab);
+});
+
+/* FAB → open Daily Entry panel */
+function openDailyEntry(){
+  // Hide all panels, show daily
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  const panel=document.getElementById('tab-daily');
+  if(panel){
+    panel.classList.add('active');
+    // Scroll to top of panel smoothly
+    panel.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
 
 /* Drag & drop */
 const dz=document.getElementById('drop-zone');
