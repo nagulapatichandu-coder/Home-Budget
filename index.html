@@ -385,6 +385,7 @@ function entriesForMonth(m){return S.entries.filter(e=>e.date&&e.date.startsWith
 function spentByCat(m){const r={};entriesForMonth(m).forEach(e=>{r[e.cat]=(r[e.cat]||0)+e.amount;});return r;}
 function fmt(n){return'₹'+Math.round(n).toLocaleString('en-IN');}
 function fmtSmall(n){if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(1)+'K';return fmt(n);}
+function fmtDate(d){if(!d)return'—';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
 
 /* Month selector */
 (function(){
@@ -613,7 +614,7 @@ function renderExpenses(){
       const pct=income?((e.amount/income)*100).toFixed(1):0;
       const pctColor=pct>=10?'#be123c':pct>=5?'#b45309':'#059669';
       return`<tr>
-        <td style="white-space:nowrap;">${e.date}</td>
+        <td style="white-space:nowrap;">${fmtDate(e.date)}</td>
         <td style="white-space:nowrap;">${ic(e.cat)} ${e.cat}</td>
         <td><span class="badge ${e.type}">${e.type}</span></td>
         <td style="font-weight:600;white-space:nowrap;color:#7c3aed;">${fmt(e.amount)}</td>
