@@ -188,7 +188,7 @@ tr:hover td{background:rgba(243,232,255,0.5);}
   <!-- BUDGET SETUP -->
   <div class="panel" id="tab-budget">
     <div class="card">
-      <div class="card-title">Monthly Income</div>
+      <div class="card-title">Monthly Income &nbsp;<span id="budget-month-badge" style="font-weight:500;font-size:10px;background:linear-gradient(135deg,#f3e8ff,#fce7f3);color:#7c3aed;border-radius:20px;padding:2px 9px;border:1px solid #e9d5ff;letter-spacing:.04em;"></span></div>
       <div class="row">
         <label>Monthly Salary (₹)</label>
         <input type="number" id="income-input" min="0" style="max-width:200px;">
@@ -398,6 +398,7 @@ const KW_MAP=[
 let S={
   income:114900,
   otherIncome:[],
+  monthlyIncome:{},
   fixed:[
     {id:1,name:'House Rent & Maintenances',budget:9500},
     {id:2,name:'Car EMI',budget:14651},
@@ -419,15 +420,43 @@ let S={
   selCat:null
 };
 
-(function load(){try{const d=localStorage.getItem('hb_app_v2');if(d)S=JSON.parse(d);}catch(e){}}());
+(function load(){
+  try{
+    const d=localStorage.getItem('hb_app_v2');
+    if(d){
+      S=JSON.parse(d);
+      // ── Migration: move legacy flat income into per-month structure ──
+      if(!S.monthlyIncome) S.monthlyIncome={};
+      if(S.income && Object.keys(S.monthlyIncome).length===0){
+        // Seed every month key with the old income so nothing breaks
+        MKEYS.forEach(k=>{
+          if(!S.monthlyIncome[k]){
+            S.monthlyIncome[k]={salary:S.income,otherIncome:[...(S.otherIncome||[])]};
+          }
+        });
+      }
+    }
+  }catch(e){}
+}());
 function save(){try{localStorage.setItem('hb_app_v2',JSON.stringify(S));}catch(e){}}
+
+// ── Per-month income helpers ──
+function incomeForMonth(m){
+  m=m||S.month;
+  if(!S.monthlyIncome)S.monthlyIncome={};
+  if(!S.monthlyIncome[m])S.monthlyIncome[m]={salary:0,otherIncome:[]};
+  return S.monthlyIncome[m];
+}
 
 const todayStr=new Date().toISOString().split('T')[0];
 document.getElementById('e-date').value=todayStr;
 
 function allCats(){return[...S.fixed,...S.variable];}
 function catType(name){return S.fixed.find(x=>x.name===name)?'fixed':'variable';}
-function totalIncome(){return S.income+(S.otherIncome||[]).reduce((a,o)=>a+o.amt,0);}
+function totalIncome(m){
+  const mi=incomeForMonth(m);
+  return (mi.salary||0)+(mi.otherIncome||[]).reduce((a,o)=>a+o.amt,0);
+}
 function entriesForMonth(m){return S.entries.filter(e=>e.date&&e.date.startsWith(m||S.month));}
 function spentByCat(m){const r={};entriesForMonth(m).forEach(e=>{r[e.cat]=(r[e.cat]||0)+e.amount;});return r;}
 function fmt(n){return'₹'+Math.round(n).toLocaleString('en-IN');}
@@ -448,8 +477,10 @@ function fmtDate(d){if(!d)return'—';const p=d.split('-');return p.length===3?`
 
 function updateMonthDisplay(){
   const i=MKEYS.indexOf(S.month);
-  document.getElementById('month-display').textContent=i>=0?MONTHS[i]+' '+S.month.split('-')[0]:'';
-  const el=document.getElementById('exp-month-lbl');if(el)el.textContent=i>=0?MONTHS[i]+' '+S.month.split('-')[0]:'';
+  const label=i>=0?MONTHS[i]+' '+S.month.split('-')[0]:'';
+  document.getElementById('month-display').textContent=label;
+  const el=document.getElementById('exp-month-lbl');if(el)el.textContent=label;
+  const badge=document.getElementById('budget-month-badge');if(badge)badge.textContent=label;
 }
 
 /* ── DASHBOARD ─────────────────────────────────────────── */
@@ -461,16 +492,18 @@ function renderMetrics(){
   const totalBudget=allCats().reduce((a,c)=>a+c.budget,0);
   const fixedSp=S.fixed.reduce((a,c)=>a+(sp[c.name]||0),0);
   const varSp=S.variable.reduce((a,c)=>a+(sp[c.name]||0),0);
-  const income=totalIncome();
+  const income=totalIncome(S.month);
   const savings=income-totalSp;
   const savPct=income?Math.round(savings/income*100):0;
-  const otherTotal=(S.otherIncome||[]).reduce((a,o)=>a+o.amt,0);
+  const otherTotal=(incomeForMonth(S.month).otherIncome||[]).reduce((a,o)=>a+o.amt,0);
   const incomeSub=otherTotal?`Salary + ${fmt(otherTotal)} other`:'Base salary';
+  const ytdIncome=MKEYS.filter(k=>k<=S.month).reduce((a,k)=>a+totalIncome(k),0);
   document.getElementById('metrics').innerHTML=`
     <div class="metric"><div class="mlabel">Monthly Income</div><div class="mval green">${fmt(income)}</div><div class="msub">${incomeSub}</div></div>
     <div class="metric"><div class="mlabel">Total Budget</div><div class="mval blue">${fmt(totalBudget)}</div><div class="msub">Planned spend</div></div>
     <div class="metric"><div class="mlabel">Total Spent</div><div class="mval ${totalSp>totalBudget?'red':'amber'}">${fmt(totalSp)}</div><div class="msub">Fixed ${fmt(fixedSp)} · Var ${fmt(varSp)}</div></div>
-    <div class="metric"><div class="mlabel">Savings</div><div class="mval ${savings>=0?'green':'red'}">${fmt(savings)}</div><div class="msub">${savPct}% of income</div></div>`;
+    <div class="metric"><div class="mlabel">Savings</div><div class="mval ${savings>=0?'green':'red'}">${fmt(savings)}</div><div class="msub">${savPct}% of income</div></div>
+    <div class="metric"><div class="mlabel">Income YTD</div><div class="mval green">${fmt(ytdIncome)}</div><div class="msub">Jan–${MONTHS[MKEYS.indexOf(S.month)].slice(0,3)} ${S.month.split('-')[0]}</div></div>`;
 }
 
 function renderDonut(){
@@ -549,7 +582,8 @@ function renderSummaryTables(){
 
 /* ── BUDGET SETUP ──────────────────────────────────────── */
 function renderBudgetSetup(){
-  document.getElementById('income-input').value=S.income;
+  const mi=incomeForMonth(S.month);
+  document.getElementById('income-input').value=mi.salary||0;
   function listHTML(list){
     if(!list.length)return'<div style="font-size:13px;color:#888;padding:8px 0;">No items. Add one below.</div>';
     return list.map(e=>`<div class="row">
@@ -563,21 +597,26 @@ function renderBudgetSetup(){
   renderOtherIncome();
 }
 
-function saveIncome(){S.income=parseFloat(document.getElementById('income-input').value)||0;save();renderAll();}
+function saveIncome(){
+  incomeForMonth(S.month).salary=parseFloat(document.getElementById('income-input').value)||0;
+  save();renderAll();
+}
 
 function addOtherIncome(){
   const label=document.getElementById('oi-label').value.trim();
   const amt=parseFloat(document.getElementById('oi-amt').value)||0;
   if(!label||!amt)return;
-  if(!S.otherIncome)S.otherIncome=[];
-  S.otherIncome.push({id:Date.now(),label,amt});
+  const mi=incomeForMonth(S.month);
+  if(!mi.otherIncome)mi.otherIncome=[];
+  mi.otherIncome.push({id:Date.now(),label,amt});
   document.getElementById('oi-label').value='';
   document.getElementById('oi-amt').value='';
   save();renderAll();
 }
 
 function removeOtherIncome(id){
-  S.otherIncome=(S.otherIncome||[]).filter(o=>o.id!==id);
+  const mi=incomeForMonth(S.month);
+  mi.otherIncome=(mi.otherIncome||[]).filter(o=>o.id!==id);
   save();renderAll();
 }
 
@@ -585,7 +624,7 @@ function renderOtherIncome(){
   const list=document.getElementById('other-income-list');
   const disp=document.getElementById('total-income-display');
   if(!list)return;
-  const items=S.otherIncome||[];
+  const items=incomeForMonth(S.month).otherIncome||[];
   if(!items.length){
     list.innerHTML='<div style="font-size:12px;color:#c084fc;padding:4px 0 6px;">No other income added yet.</div>';
   }else{
@@ -598,7 +637,7 @@ function renderOtherIncome(){
         </span>
       </div>`).join('');
   }
-  if(disp)disp.textContent=fmt(totalIncome());
+  if(disp)disp.textContent=fmt(totalIncome(S.month));
 }
 function updateBudget(id,val){
   const item=[...S.fixed,...S.variable].find(x=>x.id===id);
@@ -726,7 +765,7 @@ function renderExpenses(){
   if(dateTo)entries=entries.filter(e=>e.date<=dateTo);
   entries.sort((a,b)=>b.date.localeCompare(a.date));
   const total=entries.reduce((a,e)=>a+e.amount,0);
-  const income=totalIncome()||1;
+  const income=totalIncome(S.month)||1;
   const tbody=document.getElementById('exp-tbody');if(!tbody)return;
 
   if(!entries.length){
@@ -795,7 +834,7 @@ function renderMonthly(){
     const total=Object.values(sp).reduce((a,b)=>a+b,0);
     const fixedSp=S.fixed.reduce((a,c)=>a+(sp[c.name]||0),0);
     const varSp=S.variable.reduce((a,c)=>a+(sp[c.name]||0),0);
-    return{m,total,fixedSp,varSp,savings:S.income-total};
+    return{m,total,fixedSp,varSp,income:totalIncome(m),savings:totalIncome(m)-total};
   });
   if(mChart){mChart.destroy();mChart=null;}
   const canvas=document.getElementById('c-monthly');
@@ -816,9 +855,9 @@ function renderMonthly(){
     });
   }
   const tbody=document.getElementById('monthly-tbody');if(!tbody)return;
-  tbody.innerHTML=mData.map((d,i)=>`<tr style="${MKEYS[i]===S.month?'background:#f0f7ff;font-weight:500;':''}">
+  tbody.innerHTML=mData.map((d,i)=>`<tr style="${MKEYS[i]===S.month?'background:rgba(243,232,255,0.5);font-weight:500;':''}">
     <td>${MONTHS[i]} ${MKEYS[i].split('-')[0]}</td>
-    <td class="green">${fmt(S.income)}</td>
+    <td class="green">${fmt(d.income)}</td>
     <td class="blue">${fmt(d.fixedSp)}</td>
     <td class="amber">${fmt(d.varSp)}</td>
     <td style="font-weight:500;">${fmt(d.total)}</td>
